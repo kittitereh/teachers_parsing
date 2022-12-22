@@ -6,6 +6,7 @@ from utils.driver import get_driver
 from one_teacher_parsing import teacher_parsing
 
 
+# TODO dd
 def parse_all_teachers(filename: str):
     """
     :param filename: название файла csv с результатом парсинга
