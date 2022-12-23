@@ -8,11 +8,13 @@ from utils.logger import get_logger, Output, catch_errors_to_log
 from utils.driver import get_driver
 from utils.work_with_csv import CsvWriter
 
+
+# создание логеров, позволяющих записывать в отдельные файлы логов события ошибок и предупреждений (отсуствие данных в полях)
 warnings = get_logger("warnings", WARNING, Output.ConsoleAndFileOutput, "logs/warnings.log")
 errors   = get_logger("errors",   ERROR,   Output.ConsoleAndFileOutput, "logs/errors.log")
 unloaded_values = get_logger("unloaded_values", WARNING, Output.ConsoleAndFileOutput,
                              "logs/unloaded_values.log")
-
+# Словарь названий столбцов для csv
 english_keys = {"Имя":                "name",
                 "Альма-матер":        "alma_mater",
                 "Дата рождения":      "birthday",
@@ -28,7 +30,7 @@ english_keys = {"Имя":                "name",
                 "Халявность":         "freebie",
                 "Общая оценка":       "total_score"}
 
-
+# Возвращает значение по ключу или возвращает дефолтное значение None
 def get_eng_key(field: str) -> str:
     key_ = english_keys.get(field, None)
 
@@ -40,13 +42,19 @@ def get_eng_key(field: str) -> str:
 
 
 def teacher_parsing(teacher_link: str, driver: WebDriver) -> dict:
+
+    # переходим по ссылке каждого преподавателя
     driver.get(teacher_link)
+
+    # словарь для хранения распарсенных полей
     teacher = {}
+    # создаем все поля заранее с пустыми строками на случай, если какие-то поля не найдутся странице
     for key in english_keys.values():
         teacher[key] = ""
 
+    # парсим имя преподавателя и записываем в словарь
     teacher["name"] = driver.find_element(By.TAG_NAME, 'h1').text
-
+    # находим вики-таблицу с информацией и оценками преподавателя
     wiki_table = driver.find_element(By.XPATH, "//table[contains(@class, 'wikitable')]")
 
     ths = wiki_table.find_elements(By.XPATH, "//th[not(contains(@colspan, '2'))]")
