@@ -3,12 +3,12 @@ from enum import Enum, auto
 from contextlib import contextmanager
 from selenium.common.exceptions import WebDriverException
 
-
+ # позволяет задать направление вывода. В стандартный вывод, в стандартный вывод и файл
 class Output(Enum):
     ConsoleOutput        = auto
     ConsoleAndFileOutput = auto
 
-
+# функция создания логгера
 def get_logger(logger_name: str, level, handler_type: Output, filename = None):
     logger = logging.getLogger(logger_name)
 
@@ -28,6 +28,7 @@ def get_logger(logger_name: str, level, handler_type: Output, filename = None):
     elif handler_type is Output.ConsoleOutput:
         pass
 
+    # общий лог
     common_log     = logging.FileHandler("logs/common.log")
     add_handler_to_logger(common_log)
 
@@ -36,6 +37,7 @@ def get_logger(logger_name: str, level, handler_type: Output, filename = None):
     return logger
 
 
+ # контекстный менеджер позволяющий перехватывать ошибки позвникающие во время парсинга
 @contextmanager
 def catch_errors_to_log(logger, msg):
     try:

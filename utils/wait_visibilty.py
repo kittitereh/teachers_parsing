@@ -4,6 +4,7 @@ from selenium.common.exceptions import WebDriverException
 from typing import Callable
 
 class Waiter:
+    '''Функция ожидания парсинга всех искомых полей'''
     def __init__(self, logger, driver):
         self._logger = logger
         self._driver = driver
@@ -19,6 +20,7 @@ class Waiter:
                 self._logger.warning(msg)
             return False
 
+    # Смотрит, прогрузились ли все элементы по xpath
     def wait_element_visibility(self, by, value, waiting_sec: int = 30):
         msg = f"Element wasn't loaded {value} by {by} in page: \n {self._driver.title}"
         condition = ec.visibility_of_element_located((by, value))

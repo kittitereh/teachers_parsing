@@ -56,10 +56,12 @@ def teacher_parsing(teacher_link: str, driver: WebDriver) -> dict:
     teacher["name"] = driver.find_element(By.TAG_NAME, 'h1').text
     # находим вики-таблицу с информацией и оценками преподавателя
     wiki_table = driver.find_element(By.XPATH, "//table[contains(@class, 'wikitable')]")
-
+    #ищем элемент th, не содержащий атрибут colspan = 2. это часть викитаблицы с информацией без звездочек
     ths = wiki_table.find_elements(By.XPATH, "//th[not(contains(@colspan, '2'))]")
 
+    # ищем td объекта и забираем информацию в формате название-значение
     for th in ths:
+        # отлавливаем исключение, когда нет td, чтобы программа не падала
         with catch_errors_to_log(errors, driver.title):
             td = th.find_element(By.XPATH, "./following-sibling::td")
             name = th.text
@@ -71,11 +73,12 @@ def teacher_parsing(teacher_link: str, driver: WebDriver) -> dict:
             key = get_eng_key(name)
             teacher[key] = value
 
+    # шаблон для xpath к звездочкам
     template = ('//div[contains(@title, "Отлично")]'
                 '/following-sibling::div[contains(@class, "ratingsinfo-avg")]')
-
+    # объект вспомогательного класса, который помогает дождать загрузки информации
     waiter = Waiter(logger=unloaded_values, driver=driver)
-    
+    # если элемент не находится по шаблоннному xpath записываем в логер назнание отсутсвующего поля и имя преподавателя
     if not waiter.wait_elements_visibility(By.XPATH, template):
         wrong_elements = wiki_table.find_elements(By.XPATH, template)
         for wrong_element in wrong_elements:
@@ -83,17 +86,20 @@ def teacher_parsing(teacher_link: str, driver: WebDriver) -> dict:
                 name_of_wrong_field_xpath = "../../../preceding-sibling::td"
                 description = wrong_element.find_element(By.XPATH, name_of_wrong_field_xpath).text
                 unloaded_values.warning(f"Пустое поле '{description}' у преподавателя '{teacher['name']}'")
-
+    # ищем звездочки по шаблонному xpath
     stars = wiki_table.find_elements(By.XPATH, template)
-
+    # переходим на предыдущего сиблинга звездочек и ищем атрибут td, содержащий название поля
     for star in stars:
         xpath = "../../../preceding-sibling::td"
         description = star.find_element(By.XPATH, xpath).text
+        # если такой элемент существует, то для него записываем занчение. Значение состоит из числа и числа в скобках
+        # например, 5.00 (2). Берем только первое число.
         if star.text:
             score, _ = star.text.split(" ")
         else:
             score = ""
 
+        # Переводим название поля на английский с помощью созданного словаря английских значений
         key = get_eng_key(description)
         teacher[key] = score
     

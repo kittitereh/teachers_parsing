@@ -63,9 +63,10 @@ def parse_all_teachers(filename: str):
 
     # Парсим страницы каждого преподавателя с помощью функции teacher_parsing
     for teacher_link in teacher_links:
-
+        # парсим страницу одного учителя
         teacher = teacher_parsing(teacher_link, driver)
 
+        # записываем информацию с только что распарсенной страницы в csv файл
         csv_file.append_to_csv(teacher)
         csv_file.flush()
 
